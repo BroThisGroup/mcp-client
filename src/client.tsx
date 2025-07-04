@@ -5,6 +5,14 @@ import "./styles.css";
 import type { MCPServersState } from "agents";
 import { agentFetch } from "agents/client";
 import { nanoid } from "nanoid";
+import {
+	MainContainer,
+	ChatContainer,
+	MessageList,
+	Message,
+	MessageInput,
+} from "@chatscope/chat-ui-kit-react";
+import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 
 let sessionId = localStorage.getItem("sessionId");
 if (!sessionId) {
@@ -24,6 +32,10 @@ function App() {
 		tools: [],
 	});
 
+	const [messages, setMessages] = useState<
+		{ message: string; sender: string }[]
+	>([]);
+
 	const agent = useAgent({
 		agent: "my-agent",
 		name: sessionId!,
@@ -32,6 +44,9 @@ function App() {
 			setMcpState(mcpServers);
 		},
 		onOpen: () => setIsConnected(true),
+		onMessage: (message: { message: string; sender: string }) => {
+			setMessages((prev) => [...prev, message]);
+		},
 	});
 
 	function openPopup(authUrl: string) {
@@ -77,6 +92,11 @@ function App() {
 		});
 	};
 
+	const handleSendMessage = (message: string) => {
+		agent.sendMessage({ message, sender: "user" });
+		setMessages((prev) => [...prev, { message, sender: "user" }]);
+	};
+
 	return (
 		<div className="container">
 			<div className="status-indicator">
@@ -110,7 +130,9 @@ function App() {
 							<b>{server.name}</b> <span>({server.server_url})</span>
 							<div className="status-indicator">
 								<div
-									className={`status-dot ${server.state === "ready" ? "connected" : ""}`}
+									className={`status-dot ${
+										server.state === "ready" ? "connected" : ""
+									}`}
 								/>
 								{server.state} (id: {id})
 							</div>
@@ -125,6 +147,30 @@ function App() {
 						)}
 					</div>
 				))}
+			</div>
+			<div className="messages-section">
+				<MainContainer>
+					<ChatContainer>
+						<MessageList>
+							{messages.map((msg, i) => (
+								<Message
+									key={i}
+									model={{
+										message: msg.message,
+										sender: msg.sender,
+										direction:
+											msg.sender === "user" ? "outgoing" : "incoming",
+										position: "single",
+									}}
+								/>
+							))}
+						</MessageList>
+						<MessageInput
+							placeholder="Type message here"
+							onSend={handleSendMessage}
+						/>
+					</ChatContainer>
+				</MainContainer>
 			</div>
 
 			<div className="messages-section">

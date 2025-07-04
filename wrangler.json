@@ -14,13 +14,17 @@
       {
         "name": "MyAgent",
         "class_name": "MyAgent"
+      },
+      {
+        "name": "search-mcp",
+        "class_name": "SearchMCP"
       }
     ]
   },
   "migrations": [
     {
       "tag": "v1",
-      "new_sqlite_classes": ["MyAgent"]
+      "new_sqlite_classes": ["MyAgent", "SearchMCP"]
     }
   ],
   "observability": {
